@@ -1,4 +1,4 @@
-package database
+package leveldb
 
 import (
 	"github.com/syndtr/goleveldb/leveldb"
@@ -123,7 +123,7 @@ func newLevelDBIterator(itr iterator.Iterator, slice *util.Range) *levelDBIterat
 	}
 }
 
-func (ldbIterator *levelDBIterator) Next() {
+func (ldbIterator *levelDBIterator) Next() bool {
 	if err := ldbIterator.iterator.Error(); err != nil {
 		panic(err)
 	}
@@ -131,9 +131,9 @@ func (ldbIterator *levelDBIterator) Next() {
 		panic("invalid iterator")
 	}
 	if ldbIterator.forwards {
-		ldbIterator.iterator.Next()
+		return ldbIterator.iterator.Next()
 	} else {
-		ldbIterator.iterator.Prev()
+		return ldbIterator.iterator.Prev()
 	}
 }
 
