@@ -4,6 +4,9 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 	"fmt"
 	"github.com/syndtr/goleveldb/leveldb/opt"
+	"github.com/syndtr/goleveldb/leveldb/iterator"
+	"github.com/syndtr/goleveldb/leveldb/util"
+	"bytes"
 )
 
 type LevelDB struct {
@@ -91,5 +94,70 @@ func (levelDB *LevelDB) WriteBatch(sync bool) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (levelDB *LevelDB) Iterator(slice *util.Range) Iterator {
+	itr := levelDB.db.NewIterator(slice, nil)
+	return newLevelDBIterator(itr, slice)
+}
+
+type levelDBIterator struct {
+	iterator iterator.Iterator
+	slice *util.Range
+	forwards bool
+}
+
+var _ Iterator = (*levelDBIterator)(nil)
+
+func newLevelDBIterator(itr iterator.Iterator, slice *util.Range) *levelDBIterator {
+	forwards := true
+	start := slice.Start
+	limit := slice.Limit
+	if bytes.Compare(start, limit) > 0 {
+		forwards = false
+	}
+	return &levelDBIterator{
+		itr,
+		slice,
+		forwards,
+	}
+}
+
+func (ldbIterator *levelDBIterator) Next() {
+	if err := ldbIterator.iterator.Error(); err != nil {
+		panic(err)
+	}
+	if !ldbIterator.iterator.Valid() {
+		panic("invalid iterator")
+	}
+	if ldbIterator.forwards {
+		ldbIterator.iterator.Next()
+	} else {
+		ldbIterator.iterator.Prev()
+	}
+}
+
+func (ldbIterator *levelDBIterator) Key() []byte {
+	if err := ldbIterator.iterator.Error(); err != nil {
+		panic(err)
+	}
+	if !ldbIterator.iterator.Valid() {
+		panic("invalid iterator")
+	}
+	return ldbIterator.iterator.Key()
+}
+
+func (ldbIterator *levelDBIterator) Value() []byte {
+	if err := ldbIterator.iterator.Error(); err != nil {
+		panic(err)
+	}
+	if !ldbIterator.iterator.Valid() {
+		panic("invalid iterator")
+	}
+	return ldbIterator.iterator.Value()
+}
+
+func (ldbIterator *levelDBIterator) Release() {
+	ldbIterator.iterator.Release()
 }
 
