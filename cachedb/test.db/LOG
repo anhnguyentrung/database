@@ -1,0 +1,32 @@
+=============== Aug 21, 2018 (JST) ===============
+12:25:24.772539 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+12:25:24.773657 db@open opening
+12:25:24.774213 version@stat F·[] S·0B[] Sc·[]
+12:25:24.774619 db@janitor F·2 G·0
+12:25:24.774662 db@open done T·977.78µs
+12:25:24.774847 db@close closing
+12:25:24.774995 db@close done T·138.216µs
+=============== Aug 21, 2018 (JST) ===============
+12:28:04.304719 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+12:28:04.305075 version@stat F·[] S·0B[] Sc·[]
+12:28:04.305114 db@open opening
+12:28:04.305181 journal@recovery F·1
+12:28:04.305580 journal@recovery recovering @1
+12:28:04.306458 memdb@flush created L0@2 N·4 S·160B "\x00\x00\x00\x00\x00\x00\x00\x01,v1":"\x00\x00\x00\x00\x00\x00\x00\x04,v4"
+12:28:04.306845 version@stat F·[1] S·160B[160B] Sc·[0.25]
+12:28:04.308267 db@janitor F·3 G·0
+12:28:04.308304 db@open done T·3.170896ms
+12:28:04.309641 db@close closing
+12:28:04.309941 db@close done T·286.36µs
+=============== Aug 21, 2018 (JST) ===============
+12:29:08.003732 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+12:29:08.004152 version@stat F·[1] S·160B[160B] Sc·[0.25]
+12:29:08.004192 db@open opening
+12:29:08.004260 journal@recovery F·1
+12:29:08.004658 journal@recovery recovering @3
+12:29:08.005712 memdb@flush created L0@5 N·4 S·155B "\x00\x00\x00\x00\x00\x00\x00\x01,v6":"\x00\x00\x00\x00\x00\x00\x00\x04,v9"
+12:29:08.006233 version@stat F·[2] S·315B[315B] Sc·[0.50]
+12:29:08.008485 db@janitor F·4 G·0
+12:29:08.008551 db@open done T·4.337026ms
+12:29:08.009968 db@close closing
+12:29:08.010193 db@close done T·211.618µs
