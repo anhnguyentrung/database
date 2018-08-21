@@ -30,7 +30,7 @@ func NewFileStorage(path string, accessMode FileAccessMode, dataSize int64) (*Fi
 	if accessMode == ReadAndWrite {
 		flag = os.O_CREATE | os.O_RDWR
 	}
-	f, err := os.OpenFile(path, flag, 0)
+	f, err := os.OpenFile(path, flag, 0666)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -55,6 +55,7 @@ func NewFileStorage(path string, accessMode FileAccessMode, dataSize int64) (*Fi
 	}
 	data, err := syscall.Mmap(int(f.Fd()), 0, int(size), prot, syscall.MAP_SHARED)
 	fileStorage := &FileStorage{
+		path: path,
 		file: 		f,
 		mmapData: 	data,
 	}
@@ -80,7 +81,7 @@ func (fileStorage *FileStorage) Read(location DataLocation) ([]byte, error) {
 	if fileStorage.mmapData == nil {
 		return nil, fmt.Errorf("nil data")
 	}
-	if location.offset + location.length >= fileStorage.size() {
+	if location.offset + location.length > fileStorage.size() {
 		return nil, io.EOF
 	}
 	start := location.offset
@@ -101,7 +102,8 @@ func (fileStorage *FileStorage) Write(data []byte, location DataLocation) error 
 	}
 	start := location.offset
 	limit := location.offset + location.length
-	copy(data, fileStorage.mmapData[start:limit])
+	fmt.Println("start limit: ", start, limit)
+	copy(fileStorage.mmapData[start:limit], data)
 	return nil
 }
 
