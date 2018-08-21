@@ -4,6 +4,7 @@ import (
 	"os"
 	"fmt"
 	"syscall"
+	"io"
 )
 
 type FileAccessMode uint8
@@ -13,12 +14,18 @@ const (
 	ReadAndWrite
 )
 
-type FileStorage struct {
-	file *os.File
-	data []byte
+type DataLocation struct {
+	offset uint32
+	length uint32
 }
 
-func NewFileStorage(path string, accessMode FileAccessMode) (*FileStorage, error) {
+type FileStorage struct {
+	path		string
+	file 		*os.File
+	mmapData 	[]byte
+}
+
+func NewFileStorage(path string, accessMode FileAccessMode, dataSize int64) (*FileStorage, error) {
 	flag := os.O_RDONLY
 	if accessMode == ReadAndWrite {
 		flag = os.O_CREATE | os.O_RDWR
@@ -37,30 +44,76 @@ func NewFileStorage(path string, accessMode FileAccessMode) (*FileStorage, error
 	prot := syscall.PROT_READ
 	if accessMode == ReadAndWrite {
 		prot = syscall.PROT_WRITE | syscall.PROT_READ
+		if dataSize > size {
+			size = dataSize
+			err = syscall.Ftruncate(int(f.Fd()), size)
+			if err != nil {
+				fmt.Println(err)
+				return nil, err
+			}
+		}
 	}
 	data, err := syscall.Mmap(int(f.Fd()), 0, int(size), prot, syscall.MAP_SHARED)
 	fileStorage := &FileStorage{
-		file: f,
-		data: data,
+		file: 		f,
+		mmapData: 	data,
 	}
 	return fileStorage, nil
 }
-
-func (fileStorage *FileStorage) Seek
 
 func (fileStorage *FileStorage) Close() {
 	err := fileStorage.file.Close()
 	if err != nil {
 		panic(err)
 	}
-	if fileStorage.data == nil {
+	if fileStorage.mmapData == nil {
 		return
 	}
-	err = syscall.Munmap(fileStorage.data)
+	err = syscall.Munmap(fileStorage.mmapData)
 	if err != nil {
 		panic(err)
 	}
-	fileStorage.data = nil
+	fileStorage.mmapData = nil
+}
+
+func (fileStorage *FileStorage) Read(location DataLocation) ([]byte, error) {
+	if fileStorage.mmapData == nil {
+		return nil, fmt.Errorf("nil data")
+	}
+	if location.offset + location.length >= fileStorage.size() {
+		return nil, io.EOF
+	}
+	start := location.offset
+	limit := location.offset + location.length
+	return fileStorage.mmapData[start:limit], nil
+}
+
+func (fileStorage *FileStorage) Write(data []byte, location DataLocation) error {
+	if uint32(len(data)) != location.length {
+		return fmt.Errorf("wrong data")
+	}
+	if location.offset + location.length > fileStorage.size() {
+		newSize := int64(location.offset + location.length)
+		err := fileStorage.resize(newSize)
+		if err != nil {
+			return err
+		}
+	}
+	start := location.offset
+	limit := location.offset + location.length
+	copy(data, fileStorage.mmapData[start:limit])
+	return nil
+}
+
+func (fileStorage *FileStorage) resize(newSize int64) error {
+	path := fileStorage.path
+	fileStorage.Close()
+	fileStorage, err := NewFileStorage(path, ReadAndWrite, newSize)
+	return err
+}
+
+func (fileStorage *FileStorage) size() uint32 {
+	return uint32(len(fileStorage.mmapData))
 }
 
 
