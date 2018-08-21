@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -41,4 +40,3 @@ func allValues(db *cachedb.LevelDB) []int {
 	}
 	return result
 }
-
