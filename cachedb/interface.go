@@ -1,7 +1,8 @@
 package cachedb
 
 type Iterator interface {
-	Next() bool
+	Valid() bool
+	Next()
 	Key() []byte
 	Value() []byte
 	Release()

@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/binary"
 	"db/cachedb"
-	"fmt"
 	"github.com/syndtr/goleveldb/leveldb/util"
+	"fmt"
 )
 
 func main() {
@@ -16,6 +16,7 @@ func main() {
 	for i := 1; i < 5; i++ {
 		db.Put(encode(i), encode(i), false)
 	}
+	//fmt.Println(db.Get(encode(1)))
 	fmt.Println(allValues(db))
 	db.Close()
 }
@@ -35,8 +36,8 @@ func allValues(db *cachedb.LevelDB) []int {
 	slice := &util.Range{}
 	slice.Start = nil
 	slice.Limit = nil
-	for itr := db.Iterator(slice); itr.Next(); {
-		result = append(result, decode(itr.Value()))
+	for itr := db.Iterator(slice); itr.Valid(); itr.Next() {
+		result = append(result, decode(itr.Key()))
 	}
 	return result
 }

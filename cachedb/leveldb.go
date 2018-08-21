@@ -116,6 +116,7 @@ func newLevelDBIterator(itr iterator.Iterator, slice *util.Range) *levelDBIterat
 	if bytes.Compare(start, limit) > 0 {
 		forwards = false
 	}
+	itr.First()
 	return &levelDBIterator{
 		itr,
 		slice,
@@ -123,7 +124,11 @@ func newLevelDBIterator(itr iterator.Iterator, slice *util.Range) *levelDBIterat
 	}
 }
 
-func (ldbIterator *levelDBIterator) Next() bool {
+func (ldbIterator *levelDBIterator) Valid() bool {
+	return ldbIterator.iterator.Valid()
+}
+
+func (ldbIterator *levelDBIterator) Next() {
 	if err := ldbIterator.iterator.Error(); err != nil {
 		panic(err)
 	}
@@ -131,9 +136,9 @@ func (ldbIterator *levelDBIterator) Next() bool {
 		panic("invalid iterator")
 	}
 	if ldbIterator.forwards {
-		return ldbIterator.iterator.Next()
+		ldbIterator.iterator.Next()
 	} else {
-		return ldbIterator.iterator.Prev()
+		ldbIterator.iterator.Prev()
 	}
 }
 
